@@ -1,0 +1,29 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.venv/
+.env
+.git/
+.gitignore
+android/node_modules/
+android/android/
+android/ios/
+*.xlsx
+*.xls
+*.csv
+!Report_2G/
+!Report_3G/
+!Report_4G/
+!Report_5G/
+!cells nominations.xlsx
+!2G.xlsx
+!3G.xlsx
+!4G.xlsx
+!5G.xlsx
+!RI HUawei 23-12-25.xlsx

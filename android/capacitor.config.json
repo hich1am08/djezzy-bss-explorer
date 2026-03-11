@@ -1,0 +1,13 @@
+{
+  "appId": "com.djezzy.bss.mobile",
+  "appName": "Djezzy BSS",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true,
+    "allowNavigation": ["*"]
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

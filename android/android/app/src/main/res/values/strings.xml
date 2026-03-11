@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Djezzy BSS</string>
+    <string name="title_activity_main">Djezzy BSS</string>
+    <string name="package_name">com.djezzy.bss.mobile</string>
+    <string name="custom_url_scheme">com.djezzy.bss.mobile</string>
+</resources>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0D0D0D">
+    <title>Djezzy BSS Mobile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            font-family: 'Outfit', sans-serif;
+            background: #0D0D0D;
+            color: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .blob {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: .15;
+        }
+
+        .s1 {
+            background: #E11326;
+            top: 10%;
+            left: 10%;
+        }
+
+        .s2 {
+            background: #3B82F6;
+            bottom: 15%;
+            right: 10%;
+        }
+
+        .box {
+            width: 92%;
+            max-width: 380px;
+            padding: 2rem 1.5rem;
+            position: relative;
+            background: rgba(26, 26, 26, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            backdrop-filter: blur(12px);
+        }
+
+        .box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #E11326, #F44336);
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #E11326;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+            margin-top: .25rem;
+        }
+
+        .sub {
+            font-size: .75rem;
+            color: #666;
+            text-align: center;
+            margin-top: .25rem;
+        }
+
+        label {
+            display: block;
+            font-size: .7rem;
+            font-weight: 600;
+            color: #666;
+            margin: 1.5rem 0 .3rem;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        input {
+            width: 100%;
+            padding: .75rem .85rem;
+            background: rgba(0, 0, 0, .3);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            color: #F5F5F5;
+            font-family: inherit;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #E11326;
+            box-shadow: 0 0 0 2px rgba(225, 19, 38, .15);
+        }
+
+        input::placeholder {
+            color: #444;
+        }
+
+        .btn {
+            width: 100%;
+            padding: .75rem;
+            margin-top: 1.25rem;
+            border: none;
+            border-radius: 8px;
+            background: #E11326;
+            color: #fff;
+            font-family: 'Outfit';
+            font-weight: 600;
+            font-size: .9rem;
+            cursor: pointer;
+            min-height: 44px;
+        }
+
+        .btn:active {
+            background: #B7101F;
+            transform: scale(.98);
+        }
+
+        .saved {
+            text-align: center;
+            font-size: .7rem;
+            color: #666;
+            margin-top: .75rem;
+        }
+
+        .saved a {
+            color: #E11326;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: .6rem;
+            color: #333;
+            margin-top: 1.25rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .err {
+            color: #EF4444;
+            font-size: .75rem;
+            text-align: center;
+            margin-top: .5rem;
+            display: none;
+        }
+
+        .spinner {
+            display: none;
+            text-align: center;
+            margin-top: .75rem;
+            color: #888;
+            font-size: .8rem;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn .3s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="blob s1"></div>
+    <div class="blob s2"></div>
+    <div class="box fade-in">
+        <div class="logo">DJEZZY</div>
+        <div class="title">BSS Mobile</div>
+        <div class="sub">Radio Access Network — Mobile Portal</div>
+        <label>Server Address</label>
+        <input type="url" id="server" placeholder="http://192.168.1.100:5000" autocomplete="off" autocapitalize="off">
+
+        <button class="btn" id="connect" onclick="connect()">Connect to Server</button>
+        <div class="err" id="err">Cannot reach server. Check URL/Token and make sure Space is "Running".</div>
+        <div class="spinner" id="spinner">⏳ Connecting...</div>
+        <div class="saved" id="saved"></div>
+        <div class="footer">Authorized Personnel Only</div>
+    </div>
+    <script>
+        const savedUrl = localStorage.getItem('djezzy_server');
+        const savedToken = localStorage.getItem('djezzy_token');
+        if (savedUrl) {
+            document.getElementById('server').value = savedUrl;
+            document.getElementById('token').value = savedToken || '';
+            document.getElementById('saved').innerHTML = 'Last: <a onclick="connect()">' + savedUrl + '</a>';
+            // Auto-connect if we have a saved URL
+            setTimeout(connect, 500);
+        }
+        async function connect() {
+            let url = document.getElementById('server').value.trim().replace(/\/$/, '');
+            if (!url) { showErr('Enter server address'); return; }
+            if (!url.startsWith('http')) url = 'http://' + url;
+
+            document.getElementById('err').style.display = 'none';
+            document.getElementById('spinner').style.display = 'block';
+            document.getElementById('connect').disabled = true;
+
+            try {
+                const r = await fetch(url + '/api/auth/csrf', { credentials: 'include' });
+                localStorage.setItem('djezzy_server', url);
+                localStorage.setItem('api_base', url);
+                window.location.href = 'index.html'; // Or whatever local path it was
+            } catch (e) {
+                console.error(e);
+                document.getElementById('spinner').style.display = 'none';
+                document.getElementById('connect').disabled = false;
+                showErr('Connection failed. Check URL/IP.');
+            }
+        }
+        function showErr(msg) {
+            const el = document.getElementById('err');
+            el.textContent = msg; el.style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

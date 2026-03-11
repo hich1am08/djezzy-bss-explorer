@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+
+# Project Specific
+*.xlsx.pkl
+.cache/
+data_store/
+tmp/
+*.log
+
+# Deployment scripts (if any leftover)
+hf_*
+Dockerfile*
+diagnostic.py
+test_app.py
+
+# OS
+.DS_Store
+Thumbs.db

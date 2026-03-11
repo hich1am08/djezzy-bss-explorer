@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: djezzy-bss-explorer
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --timeout 300 --workers 1 run:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.17
+      - key: FLASK_APP
+        value: run.py
+      - key: PORT
+        value: 10000

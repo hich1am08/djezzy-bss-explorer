@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="csrf-token" content="">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0D0D0D">
+    <title>Djezzy BSS Mobile</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Roboto+Mono:wght@400;500&family=Roboto:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <div id="toast-container"></div>
+
+    <!-- Server Config Modal -->
+    <div id="server-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content glass-panel">
+            <h3>⚙ Server Configuration</h3>
+            <p class="text-muted">Enter your Flask server address</p>
+            <input type="text" id="server-url-input" placeholder="http://192.168.1.100:5000" value="">
+            <div class="modal-actions">
+                <button class="btn primary full-width" onclick="saveServerUrl()">Connect</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen full-center">
+        <div class="blob shape1"></div>
+        <div class="blob shape2"></div>
+        <div class="glass-panel login-box fade-in">
+            <div class="login-header">
+                <div class="djezzy-logo">DJEZZY</div>
+                <h1 class="brand">BSS Mobile</h1>
+                <p class="subtitle">Radio Access Network — Mobile Portal</p>
+            </div>
+            <form id="login-form">
+                <div class="input-group"><label>Username</label>
+                    <input type="text" id="username" placeholder="e.g. admin" required autocomplete="username">
+                </div>
+                <div class="input-group"><label>Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required
+                        autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn primary full-width">Secure Sign In</button>
+            </form>
+            <button class="btn text full-width mt-2" onclick="showServerConfig()" style="font-size:.75rem">
+                ⚙ Configure Server
+            </button>
+            <div class="login-footer">AUTHORIZED PERSONNEL ONLY</div>
+        </div>
+    </div>
+
+    <!-- App Screen -->
+    <div id="app-screen" class="screen hidden">
+
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="header-left">
+                <span class="header-logo">Djezzy</span>
+                <span class="header-title">BSS Mobile</span>
+            </div>
+            <div class="header-right">
+                <span id="display-user" class="header-user"></span>
+                <button id="logout-btn" class="btn-icon" title="Sign Out">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content" id="main-content">
+
+            <!-- Dashboard -->
+            <section id="view-dashboard" class="view active fade-in">
+                <div class="view-header">
+                    <h2>Network Overview</h2>
+                    <p>Live stats across all technologies.</p>
+                </div>
+                <div class="stats-cards" id="dash-stats-cards"></div>
+                <div class="charts-grid">
+                    <div class="glass-panel chart-card">
+                        <h4>Technology Distribution</h4><canvas id="chart-tech"></canvas>
+                    </div>
+                    <div class="glass-panel chart-card">
+                        <h4>4G Band Distribution</h4><canvas id="chart-4g-bands"></canvas>
+                    </div>
+                    <div class="glass-panel chart-card">
+                        <h4>Sites by Wilaya</h4><canvas id="chart-wilaya"></canvas>
+                    </div>
+                    <div class="glass-panel chart-card">
+                        <h4>Equipment Types</h4><canvas id="chart-equip"></canvas>
+                    </div>
+                    <div class="glass-panel chart-card">
+                        <h4>BTS Platforms</h4><canvas id="chart-platform"></canvas>
+                    </div>
+                    <div class="glass-panel chart-card">
+                        <h4>RRU Models</h4><canvas id="chart-rru-types"></canvas>
+                    </div>
+                    <div class="glass-panel chart-card">
+                        <h4>RRU Modes</h4><canvas id="chart-rru-modes"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Site Lookup -->
+            <section id="view-site-lookup" class="view hidden fade-in">
+                <div class="view-header">
+                    <h2>Site Lookup</h2>
+                    <p>Enter any site code format.</p>
+                </div>
+                <div class="search-bar glass-panel">
+                    <input type="text" id="site-search-input" placeholder="e.g. 06X020, A16X174..." autocomplete="off">
+                    <button class="btn primary" id="btn-site-search">Analyze</button>
+                </div>
+                <div id="site-results" class="results-container">
+                    <div class="empty-state">
+                        <p>Search for a site to begin</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Parameter Search -->
+            <section id="view-param-search" class="view hidden fade-in">
+                <div class="view-header">
+                    <h2>Parameter Search</h2>
+                    <p>Search by TAC, LAC, PCI, EARFCN...</p>
+                </div>
+                <div class="search-bar glass-panel">
+                    <select id="param-select" class="select-input">
+                        <option value="">-- Parameter --</option>
+                    </select>
+                    <input type="text" id="param-value-input" placeholder="Enter value...">
+                    <button class="btn primary" id="btn-param-search">Search</button>
+                </div>
+                <div id="param-results" class="results-container"></div>
+            </section>
+
+            <!-- All Sites -->
+            <section id="view-sites-list" class="view hidden fade-in">
+                <div class="view-header">
+                    <h2>All Sites</h2>
+                    <p>Browse sites with band configs.</p>
+                </div>
+                <div class="search-bar glass-panel">
+                    <input type="text" id="sites-list-search" placeholder="Filter by site code...">
+                    <button class="btn primary" id="btn-sites-list-search">Filter</button>
+                </div>
+                <div id="sites-list-container" class="results-container"></div>
+                <div id="sites-list-pagination" class="pagination"></div>
+            </section>
+
+            <!-- Dataset Browser -->
+            <section id="view-dataset-browser" class="view hidden fade-in">
+                <div class="view-header">
+                    <h2>Dataset Browser</h2>
+                    <p>Browse raw data from loaded datasets.</p>
+                </div>
+                <div class="search-bar glass-panel">
+                    <select id="dataset-select" class="select-input">
+                        <option value="">-- Select Dataset --</option>
+                    </select>
+                    <input type="text" id="dataset-search" placeholder="Search within dataset...">
+                    <button class="btn primary" id="btn-dataset-load">Load</button>
+                </div>
+                <div id="dataset-table-container" class="results-container mt-2"></div>
+                <div id="dataset-pagination" class="pagination"></div>
+            </section>
+
+            <!-- Batch Export -->
+            <section id="view-batch-report" class="view hidden fade-in">
+                <div class="view-header">
+                    <h2>Batch Report</h2>
+                    <p>Analyze or export multiple sites.</p>
+                </div>
+                <div class="glass-panel" style="padding:1rem;">
+                    <textarea id="batch-codes-input" class="batch-textarea"
+                        placeholder="Paste site codes, one per line:&#10;16X174&#10;06X020&#10;..."></textarea>
+                    <div class="batch-actions">
+                        <button class="btn primary" id="btn-batch-search">Analyze</button>
+                        <button class="btn outline" id="btn-batch-export">Export .xlsx</button>
+                        <span id="batch-count" class="text-muted"></span>
+                    </div>
+                </div>
+                <div id="batch-results" class="results-container mt-2"></div>
+            </section>
+
+            <!-- Topology -->
+            <section id="view-topology-view" class="view hidden fade-in">
+                <div class="view-header">
+                    <h2>Topology</h2>
+                    <p>Interactive X2 neighbor graph with health coloring.</p>
+                </div>
+                <div class="search-bar glass-panel">
+                    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+                        <input type="text" id="topo-center-input" placeholder="Site code (optional)" style="flex:1">
+                        <button class="btn primary" onclick="loadTopology()">Load</button>
+                    </div>
+                    <label
+                        style="display:flex;align-items:center;gap:.3rem;font-size:.75rem;color:#aaa;margin-top:.4rem;cursor:pointer">
+                        <input type="checkbox" id="topo-faults-only" onchange="filterTopoFaults()"> Show faults only
+                    </label>
+                </div>
+                <div id="topo-stats" class="glass-panel" style="padding:.4rem .6rem;margin-top:.5rem;display:none">
+                    <div style="display:flex;gap:1rem;flex-wrap:wrap;font-size:.7rem">
+                        <span>🟢 <strong id="topo-stat-healthy">0</strong></span>
+                        <span>🟡 <strong id="topo-stat-warning">0</strong></span>
+                        <span>🔴 <strong id="topo-stat-critical">0</strong></span>
+                        <span style="margin-left:auto">Links: <strong id="topo-stat-links">0</strong></span>
+                        <span>Faults: <strong id="topo-stat-faults" style="color:#EF4444">0</strong></span>
+                    </div>
+                </div>
+                <div id="topo-container" class="glass-panel topo-box"></div>
+                <div id="topo-info" class="glass-panel mt-1" style="padding:.5rem;display:none"></div>
+            </section>
+
+            <!-- Compare -->
+            <section id="view-compare-view" class="view hidden fade-in">
+                <div class="view-header">
+                    <h2>Site Compare</h2>
+                    <p>Compare 2–3 sites side by side.</p>
+                </div>
+                <div class="search-bar glass-panel compare-inputs">
+                    <input type="text" id="cmp-site-1" placeholder="Site 1">
+                    <input type="text" id="cmp-site-2" placeholder="Site 2">
+                    <input type="text" id="cmp-site-3" placeholder="Site 3 (opt)">
+                    <button class="btn primary full-width" onclick="doCompare()">Compare</button>
+                </div>
+                <div id="compare-results" class="mt-1"></div>
+            </section>
+
+            <!-- Heatmap -->
+            <section id="view-heatmap-view" class="view hidden fade-in">
+                <div class="view-header">
+                    <h2>Wilaya Heatmap</h2>
+                    <p>Network intensity across 58 wilayas.</p>
+                </div>
+                <div class="glass-panel"
+                    style="padding:.5rem;margin-bottom:.5rem;display:flex;gap:.5rem;align-items:center">
+                    <label style="color:var(--text-secondary);font-size:.8rem">Metric:</label>
+                    <select id="heatmap-metric" class="select-input" onchange="renderHeatmapGrid()">
+                        <option value="total_sites">Total Sites</option>
+                        <option value="cells_4g">4G Cells</option>
+                        <option value="cells_5g">5G Cells</option>
+                        <option value="cells_2g">2G Cells</option>
+                        <option value="cells_3g">3G Cells</option>
+                        <option value="equipment_count">Equipment</option>
+                    </select>
+                </div>
+                <div id="heatmap-grid" class="heatmap-grid"></div>
+            </section>
+
+            <!-- Audit -->
+            <section id="view-audit-view" class="view hidden fade-in">
+                <div class="view-header">
+                    <h2>Network Audit</h2>
+                    <p>One-click scan for faults & gaps.</p>
+                </div>
+                <button class="btn primary full-width" onclick="runAudit()" id="btn-run-audit">🔍 Run Full
+                    Audit</button>
+                <div id="audit-results" class="mt-1"></div>
+            </section>
+
+            <!-- Smart Filter -->
+            <section id="view-filter-view" class="view hidden fade-in">
+                <div class="view-header">
+                    <h2>Smart Filter</h2>
+                    <p>Filter sites by multiple criteria.</p>
+                </div>
+                <div class="glass-panel filter-bar">
+                    <select id="flt-wilaya" class="select-input">
+                        <option value="">All Wilayas</option>
+                    </select>
+                    <select id="flt-tech" class="select-input">
+                        <option value="">All Technologies</option>
+                        <option value="2G">2G</option>
+                        <option value="3G">3G</option>
+                        <option value="4G">4G</option>
+                        <option value="5G">5G</option>
+                    </select>
+                    <select id="flt-platform" class="select-input">
+                        <option value="">All Platforms</option>
+                        <option value="BTS3900">BTS3900</option>
+                        <option value="BTS5900">BTS5900</option>
+                    </select>
+                    <button class="btn primary full-width" onclick="doFilter()">Apply Filters</button>
+                </div>
+                <div id="filter-results" class="mt-1"></div>
+            </section>
+
+            <!-- Frequencies -->
+            <section id="view-frequency-view" class="view hidden fade-in">
+                <div class="view-header">
+                    <h2>Frequencies</h2>
+                    <p>Carrier allocation per site.</p>
+                </div>
+                <div class="search-bar glass-panel">
+                    <input type="text" id="freq-site-input" placeholder="Enter site code">
+                    <button class="btn primary" onclick="loadFrequencyPlan()">Load Plan</button>
+                </div>
+                <div id="freq-results" class="mt-1"></div>
+            </section>
+
+            <!-- Lifecycle -->
+            <section id="view-lifecycle-view" class="view hidden fade-in">
+                <div class="view-header">
+                    <h2>Lifecycle</h2>
+                    <p>Equipment aging analysis.</p>
+                </div>
+                <button class="btn primary full-width" onclick="loadLifecycle()" id="btn-lifecycle">📊 Analyze
+                    Lifecycle</button>
+                <div id="lifecycle-results" class="mt-1"></div>
+            </section>
+
+            <!-- Admin -->
+            <section id="view-admin-dash" class="view hidden fade-in">
+                <div class="view-header">
+                    <h2>Admin</h2>
+                    <p>Manage datasets & users.</p>
+                </div>
+                <div class="admin-grid">
+                    <div class="card glass-panel djezzy-card-alert">
+                        <h3>Data Reload</h3>
+                        <p class="text-muted">Re-scan and reload all Excel files.</p>
+                        <button class="btn outline mt-2" id="btn-reload-data">Force Reload</button>
+                    </div>
+                    <div class="card glass-panel">
+                        <h3>Upload Dataset</h3>
+                        <select id="upload-dataset-select" class="select-input mt-1">
+                            <option value="">-- Select Category --</option>
+                            <optgroup label="Core Datasets (1 file)">
+                                <option value="2G">2G Cell Export</option>
+                                <option value="3G">3G Cell Export</option>
+                                <option value="4G">4G Cell Export</option>
+                                <option value="5G">5G Cell Export</option>
+                                <option value="Equipment">Equipment (RI Huawei)</option>
+                            </optgroup>
+                            <optgroup label="Report Folders (multi-file)">
+                                <option value="2G_Reports">2G Reports (6 files)</option>
+                                <option value="3G_Reports">3G Reports (4 files)</option>
+                                <option value="4G_Reports">4G Reports (12 files)</option>
+                                <option value="5G_Reports">5G Reports (11 files)</option>
+                            </optgroup>
+                        </select>
+                        <input type="file" id="upload-file-input" accept=".xlsx,.xls,.csv" class="mt-1" multiple>
+                        <button class="btn primary mt-1" id="btn-upload-dataset">Upload</button>
+                    </div>
+                    <div class="card glass-panel">
+                        <h3>Create User</h3>
+                        <input type="text" id="new-username" placeholder="Username" class="mt-1">
+                        <input type="password" id="new-password" placeholder="Password" class="mt-1">
+                        <select id="new-role" class="select-input mt-1">
+                            <option value="user">Read-Only</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <button class="btn primary mt-1" id="btn-create-user">Create</button>
+                    </div>
+                    <div class="card glass-panel">
+                        <h3>Change Password</h3>
+                        <select id="chg-user-select" class="select-input mt-1">
+                            <option value="">-- User --</option>
+                        </select>
+                        <input type="password" id="chg-new-password" placeholder="New Password" class="mt-1">
+                        <button class="btn primary mt-1" id="btn-change-password">Change</button>
+                    </div>
+                </div>
+                <div class="glass-panel mt-2" style="padding:.75rem">
+                    <h3 style="margin-bottom:.5rem">All Users</h3>
+                    <div id="users-list"></div>
+                </div>
+                <div class="glass-panel mt-2" style="padding:.75rem">
+                    <h3>Loaded Datasets</h3>
+                    <ul id="data-stats-list" class="stats-list"></ul>
+                </div>
+            </section>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav" id="bottom-nav">
+            <div class="nav-scroll">
+                <button class="nav-tab active" data-view="dashboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2" />
+                    </svg>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-tab" data-view="site-lookup">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="11" cy="11" r="8" stroke-width="2" />
+                        <path d="m21 21-4.35-4.35" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <span>Lookup</span>
+                </button>
+                <button class="nav-tab" data-view="param-search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M3 4h18M3 8h14M3 12h10M3 16h6" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <span>Params</span>
+                </button>
+                <button class="nav-tab" data-view="sites-list">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M4 6h16M4 10h16M4 14h16M4 18h16" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <span>Sites</span>
+                </button>
+                <button class="nav-tab" data-view="batch-report">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke-width="2" />
+                        <path d="M14 2v6h6M9 15h6M9 11h6" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <span>Batch</span>
+                </button>
+                <button class="nav-tab nav-sep-label" disabled>Expert</button>
+                <button class="nav-tab" data-view="topology-view">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="5" cy="5" r="3" stroke-width="2" />
+                        <circle cx="19" cy="5" r="3" stroke-width="2" />
+                        <circle cx="12" cy="19" r="3" stroke-width="2" />
+                        <path d="M7.5 6.5L10 17M16.5 6.5L14 17M8 5h8" stroke-width="1.5" />
+                    </svg>
+                    <span>Topo</span>
+                </button>
+                <button class="nav-tab" data-view="compare-view">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M12 3v18M3 12h18" stroke-width="2" stroke-linecap="round" />
+                        <rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2" />
+                    </svg>
+                    <span>Compare</span>
+                </button>
+                <button class="nav-tab" data-view="heatmap-view">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2" />
+                    </svg>
+                    <span>Heatmap</span>
+                </button>
+                <button class="nav-tab" data-view="audit-view">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M9 11l3 3L22 4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-width="2" />
+                    </svg>
+                    <span>Audit</span>
+                </button>
+                <button class="nav-tab" data-view="filter-view">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M22 3H2l8 9.46V19l4 2v-8.54z" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                    <span>Filter</span>
+                </button>
+                <button class="nav-tab" data-view="frequency-view">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M2 12h4l3-9 4 18 3-9h6" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                    <span>Freq</span>
+                </button>
+                <button class="nav-tab" data-view="lifecycle-view">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="10" stroke-width="2" />
+                        <path d="M12 6v6l4 2" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <span>Lifecycle</span>
+                </button>
+                <button class="nav-tab" data-view="dataset-browser" id="nav-dataset" style="display:none">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <ellipse cx="12" cy="6" rx="8" ry="3" stroke-width="2" />
+                        <path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6" stroke-width="2" />
+                        <path d="M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" stroke-width="2" />
+                    </svg>
+                    <span>Data</span>
+                </button>
+                <button class="nav-tab" data-view="admin-dash" id="nav-admin" style="display:none">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="3" stroke-width="2" />
+                        <path
+                            d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+                            stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    <span>Admin</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Developer Signature -->
+    <footer class="dev-footer">
+        <div class="dev-sig">
+            <span class="dev-label">Developed by</span>
+            <strong class="dev-name">Hicham Hedibi</strong>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

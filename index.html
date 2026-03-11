@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Djezzy | BSS Configuration Explorer</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Roboto+Mono:wght@400;500&family=Roboto:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <div id="toast-container"></div>
+
+    <!-- Login -->
+    <div id="login-screen" class="screen full-center">
+        <div class="blob shape1"></div>
+        <div class="blob shape2"></div>
+        <div class="glass-panel login-box fade-in">
+            <div class="login-header">
+                <div class="djezzy-logo">DJEZZY</div>
+                <h1 class="brand">BSS Explorer v3</h1>
+                <p class="subtitle">Radio Access Network Configuration Portal</p>
+            </div>
+            <form id="login-form">
+                <div class="input-group"><label>Username</label>
+                    <input type="text" id="username" placeholder="e.g. admin" required autocomplete="username">
+                </div>
+                <div class="input-group"><label>Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required
+                        autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn primary full-width">Secure Sign In</button>
+            </form>
+            <div class="login-footer">AUTHORIZED PERSONNEL ONLY</div>
+        </div>
+    </div>
+
+    <!-- App -->
+    <div id="app-screen" class="screen hidden dash-layout">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="djezzy-logo-small">Djezzy</div>
+                <span class="app-title">BSS Explorer</span>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-view="dashboard">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2" />
+                    </svg>
+                    Dashboard
+                </li>
+                <li data-view="site-lookup">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="11" cy="11" r="8" stroke-width="2" />
+                        <path d="m21 21-4.35-4.35" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    Site Lookup
+                </li>
+                <li data-view="param-search">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M3 4h18M3 8h14M3 12h10M3 16h6" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    Parameter Search
+                </li>
+                <li data-view="sites-list">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M4 6h16M4 10h16M4 14h16M4 18h16" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    All Sites
+                </li>
+                <li data-view="dataset-browser" id="nav-dataset" class="hidden">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <ellipse cx="12" cy="6" rx="8" ry="3" stroke-width="2" />
+                        <path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6" stroke-width="2" />
+                        <path d="M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" stroke-width="2" />
+                    </svg>
+                    Dataset Browser
+                </li>
+                <li data-view="batch-report">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke-width="2" />
+                        <path d="M14 2v6h6M9 15h6M9 11h6" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    Batch Export
+                </li>
+                <li class="nav-separator"><span>Expert Modules</span></li>
+                <li data-view="topology-view">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="5" cy="5" r="3" stroke-width="2" />
+                        <circle cx="19" cy="5" r="3" stroke-width="2" />
+                        <circle cx="12" cy="19" r="3" stroke-width="2" />
+                        <path d="M7.5 6.5L10 17M16.5 6.5L14 17M8 5h8" stroke-width="1.5" />
+                    </svg>
+                    Topology
+                </li>
+                <li data-view="compare-view">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M12 3v18M3 12h18" stroke-width="2" stroke-linecap="round" />
+                        <rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2" />
+                    </svg>
+                    Compare
+                </li>
+                <li data-view="heatmap-view">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2" />
+                    </svg>
+                    Heatmap
+                </li>
+                <li data-view="audit-view">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M9 11l3 3L22 4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke-width="2" />
+                    </svg>
+                    Audit
+                </li>
+                <li data-view="filter-view">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M22 3H2l8 9.46V19l4 2v-8.54z" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                    Smart Filter
+                </li>
+                <li data-view="frequency-view">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M2 12h4l3-9 4 18 3-9h6" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                    Frequencies
+                </li>
+                <li data-view="lifecycle-view">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="10" stroke-width="2" />
+                        <path d="M12 6v6l4 2" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    Lifecycle
+                </li>
+                <li data-view="admin-dash" id="nav-admin" class="hidden">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <circle cx="12" cy="12" r="3" stroke-width="2" />
+                        <path
+                            d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+                            stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                    Admin
+                </li>
+            </ul>
+            <div class="nav-footer">
+                <div class="user-info">
+                    <div class="user-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="8" r="4" stroke-width="2" />
+                            <path d="M5 21a7 7 0 0114 0" stroke-width="2" />
+                        </svg></div>
+                    <div>
+                        <div id="display-user">User</div>
+                        <div id="display-role" class="badge">Role</div>
+                    </div>
+                </div>
+                <button id="logout-btn" class="btn text" title="Sign Out">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="20" height="20">
+                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+
+            <!-- Dashboard -->
+            <section id="view-dashboard" class="view active fade-in">
+                <div class="header">
+                    <h2>Network Overview</h2>
+                    <p>Live statistics across all technologies.</p>
+                </div>
+                <div class="stats-cards" id="dash-stats-cards"></div>
+                <div class="charts-grid">
+                    <div class="glass-panel chart-card">
+                        <h4>Technology Distribution</h4><canvas id="chart-tech"></canvas>
+                    </div>
+                    <div class="glass-panel chart-card">
+                        <h4>4G Band Distribution</h4><canvas id="chart-4g-bands"></canvas>
+                    </div>
+                    <div class="glass-panel chart-card">
+                        <h4>Sites by Wilaya Code</h4><canvas id="chart-wilaya"></canvas>
+                    </div>
+                    <div class="glass-panel chart-card">
+                        <h4>Equipment Types</h4><canvas id="chart-equip"></canvas>
+                    </div>
+                    <div class="glass-panel chart-card">
+                        <h4>BTS Platform Distribution</h4><canvas id="chart-platform"></canvas>
+                    </div>
+                    <div class="glass-panel chart-card">
+                        <h4>RRU Model Distribution</h4><canvas id="chart-rru-types"></canvas>
+                    </div>
+                    <div class="glass-panel chart-card">
+                        <h4>RRU Working Modes</h4><canvas id="chart-rru-modes"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Site Lookup -->
+            <section id="view-site-lookup" class="view hidden fade-in">
+                <div class="header">
+                    <h2>Site Lookup</h2>
+                    <p>Enter any site code format — A16X174, 3A16X174, 06X020, 4A06X020 — to get the full multi-band
+                        profile.</p>
+                </div>
+                <div class="search-bar glass-panel">
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="11" cy="11" r="8" stroke-width="2" />
+                            <path d="m21 21-4.35-4.35" stroke-width="2" />
+                        </svg>
+                        <input type="text" id="site-search-input" placeholder="e.g. 06X020, A16X174, 4A06X020..."
+                            autocomplete="off">
+                    </div>
+                    <button class="btn primary" id="btn-site-search">Analyze</button>
+                </div>
+                <div id="site-results" class="results-container">
+                    <div class="empty-state">
+                        <p>Search for a site to begin analysis</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Parameter Search -->
+            <section id="view-param-search" class="view hidden fade-in">
+                <div class="header">
+                    <h2>Parameter Search</h2>
+                    <p>Search by any parameter (TAC, LAC, SAC, PCI, EARFCN, BCCH, CI, Azimuth...) to find matching sites
+                        and cells.</p>
+                </div>
+                <div class="search-bar glass-panel">
+                    <select id="param-select" class="select-input" style="max-width:200px;">
+                        <option value="">-- Parameter --</option>
+                    </select>
+                    <div class="search-input-wrapper">
+                        <input type="text" id="param-value-input" placeholder="Enter value to search...">
+                    </div>
+                    <button class="btn primary" id="btn-param-search">Search</button>
+                </div>
+                <div id="param-results" class="results-container"></div>
+            </section>
+
+            <!-- All Sites -->
+            <section id="view-sites-list" class="view hidden fade-in">
+                <div class="header">
+                    <h2>All Sites & Configurations</h2>
+                    <p>Browse all sites with per-band sector configurations.</p>
+                </div>
+                <div class="search-bar glass-panel">
+                    <div class="search-input-wrapper"><input type="text" id="sites-list-search"
+                            placeholder="Filter by site code..."></div>
+                    <button class="btn primary" id="btn-sites-list-search">Filter</button>
+                </div>
+                <div id="sites-list-container" class="results-container"></div>
+                <div id="sites-list-pagination" class="pagination"></div>
+            </section>
+
+            <!-- Dataset Browser -->
+            <section id="view-dataset-browser" class="view hidden fade-in">
+                <div class="header">
+                    <h2>Dataset Browser</h2>
+                    <p>Browse raw data from any of the 39 loaded datasets.</p>
+                </div>
+                <div class="browser-controls glass-panel">
+                    <select id="dataset-select" class="select-input">
+                        <option value="">-- Select Dataset --</option>
+                    </select>
+                    <div class="search-input-wrapper"><input type="text" id="dataset-search"
+                            placeholder="Search within dataset..."></div>
+                    <button class="btn primary" id="btn-dataset-load">Load</button>
+                </div>
+                <div id="dataset-table-container" class="results-container mt-4"></div>
+                <div id="dataset-pagination" class="pagination"></div>
+            </section>
+
+            <!-- Batch Export -->
+            <section id="view-batch-report" class="view hidden fade-in">
+                <div class="header">
+                    <h2>Batch Site Report</h2>
+                    <p>Paste multiple site codes to analyze all at once or export a premium Excel report.</p>
+                </div>
+                <div class="glass-panel" style="padding:1.5rem;">
+                    <textarea id="batch-codes-input" class="batch-textarea"
+                        placeholder="Paste site codes, one per line:&#10;16X174&#10;06X020&#10;A18X016&#10;..."></textarea>
+                    <div style="display:flex;gap:0.75rem;margin-top:1rem;align-items:center;flex-wrap:wrap;">
+                        <button class="btn primary" id="btn-batch-search">Analyze All</button>
+                        <button class="btn outline" id="btn-batch-export">Export Excel</button>
+                        <span id="batch-count" class="text-muted"></span>
+                    </div>
+                </div>
+                <div id="batch-results" class="results-container mt-4"></div>
+            </section>
+
+            <!-- Admin -->
+            <section id="view-admin-dash" class="view hidden fade-in">
+                <div class="header">
+                    <h2>System Admin</h2>
+                    <p>Manage datasets, users, and data loading.</p>
+                </div>
+                <div class="admin-grid">
+                    <div class="card glass-panel djezzy-card-alert">
+                        <h3>Data Reload</h3>
+                        <p>Re-scan and reload all Excel files.</p>
+                        <button class="btn outline mt-4" id="btn-reload-data">Force Reload</button>
+                    </div>
+                    <div class="card glass-panel">
+                        <h3>Upload Dataset</h3>
+                        <p>Upload core or report files by category.</p>
+                        <select id="upload-dataset-select" class="select-input mt-2">
+                            <option value="">-- Select Category --</option>
+                            <optgroup label="Core Datasets (1 file each)">
+                                <option value="2G">2G Cell Export</option>
+                                <option value="3G">3G Cell Export</option>
+                                <option value="4G">4G Cell Export</option>
+                                <option value="5G">5G Cell Export</option>
+                                <option value="Equipment">Equipment (RI Huawei)</option>
+                            </optgroup>
+                            <optgroup label="Report Folders (multiple files)">
+                                <option value="2G_Reports">2G Reports (6 files)</option>
+                                <option value="3G_Reports">3G Reports (4 files)</option>
+                                <option value="4G_Reports">4G Reports (12 files)</option>
+                                <option value="5G_Reports">5G Reports (11 files)</option>
+                            </optgroup>
+                        </select>
+                        <input type="file" id="upload-file-input" accept=".xlsx,.xls,.csv" class="mt-2" multiple>
+                        <p id="upload-hint" class="text-muted" style="font-size:.75rem;margin-top:.25rem"></p>
+                        <button class="btn primary mt-2" id="btn-upload-dataset">Upload</button>
+                    </div>
+                    <div class="card glass-panel">
+                        <h3>User Management</h3>
+                        <p>Create and manage user accounts.</p>
+                        <div class="mt-2">
+                            <input type="text" id="new-username" placeholder="Username" class="mt-2">
+                            <input type="password" id="new-password" placeholder="Password" class="mt-2">
+                            <select id="new-role" class="select-input mt-2">
+                                <option value="user">Read-Only User</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                            <button class="btn primary mt-2" id="btn-create-user">Create User</button>
+                        </div>
+                    </div>
+                    <div class="card glass-panel">
+                        <h3>Change Password</h3>
+                        <p>Update password for any user.</p>
+                        <div class="mt-2">
+                            <select id="chg-user-select" class="select-input mt-2">
+                                <option value="">-- User --</option>
+                            </select>
+                            <input type="password" id="chg-new-password" placeholder="New Password" class="mt-2">
+                            <button class="btn primary mt-2" id="btn-change-password">Change</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="glass-panel mt-4" style="padding:1rem">
+                    <h3 style="margin-bottom:.75rem">All Users</h3>
+                    <div id="users-list"></div>
+                </div>
+                <div class="system-stats glass-panel mt-4">
+                    <h3>Loaded Datasets</h3>
+                    <ul id="data-stats-list" class="stats-list"></ul>
+                </div>
+            </section>
+
+            <!-- Topology -->
+            <section id="view-topology-view" class="view hidden fade-in">
+                <div class="header">
+                    <h2>Network Topology</h2>
+                    <p>Interactive X2 neighbor graph with health-based coloring. Enter a site code to explore.</p>
+                </div>
+                <div class="search-bar glass-panel" style="margin-bottom:.75rem">
+                    <div class="search-input-wrapper" style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+                        <input type="text" id="topo-center-input"
+                            placeholder="Site code (e.g. 16X677) or leave empty for full network" />
+                        <button class="btn primary" onclick="loadTopology()">Load Graph</button>
+                        <label
+                            style="display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:#ccc;margin-left:auto;cursor:pointer">
+                            <input type="checkbox" id="topo-faults-only" onchange="filterTopoFaults()"> Show faults only
+                        </label>
+                    </div>
+                </div>
+                <div id="topo-stats" class="glass-panel" style="padding:.5rem .75rem;margin-bottom:.75rem;display:none">
+                    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;font-size:.8rem">
+                        <span>🟢 Healthy: <strong id="topo-stat-healthy">0</strong></span>
+                        <span>🟡 Warning: <strong id="topo-stat-warning">0</strong></span>
+                        <span>🔴 Critical: <strong id="topo-stat-critical">0</strong></span>
+                        <span style="margin-left:auto">Links: <strong id="topo-stat-links">0</strong></span>
+                        <span>Faults: <strong id="topo-stat-faults" style="color:#EF4444">0</strong></span>
+                    </div>
+                </div>
+                <div id="topo-container" class="glass-panel" style="height:500px;position:relative"></div>
+                <div id="topo-info" class="glass-panel mt-2" style="padding:.75rem;display:none"></div>
+            </section>
+
+            <!-- Compare -->
+            <section id="view-compare-view" class="view hidden fade-in">
+                <div class="header">
+                    <h2>Site Comparison</h2>
+                    <p>Compare 2 or 3 sites side by side.</p>
+                </div>
+                <div class="search-bar glass-panel" style="gap:.5rem;flex-wrap:wrap">
+                    <input type="text" id="cmp-site-1" placeholder="Site 1" style="flex:1;min-width:120px" />
+                    <input type="text" id="cmp-site-2" placeholder="Site 2" style="flex:1;min-width:120px" />
+                    <input type="text" id="cmp-site-3" placeholder="Site 3 (optional)" style="flex:1;min-width:120px" />
+                    <button class="btn primary" onclick="doCompare()">Compare</button>
+                </div>
+                <div id="compare-results" class="mt-2"></div>
+            </section>
+
+            <!-- Heatmap -->
+            <section id="view-heatmap-view" class="view hidden fade-in">
+                <div class="header">
+                    <h2>Algeria Wilaya Heatmap</h2>
+                    <p>Network coverage intensity across all 58 wilayas.</p>
+                </div>
+                <div class="glass-panel"
+                    style="padding:.75rem;margin-bottom:1rem;display:flex;gap:1rem;align-items:center">
+                    <label style="color:var(--text-secondary)">Metric:</label>
+                    <select id="heatmap-metric" class="select-input" onchange="renderHeatmapGrid()">
+                        <option value="total_sites">Total Sites</option>
+                        <option value="cells_4g">4G Cells</option>
+                        <option value="cells_5g">5G Cells</option>
+                        <option value="cells_2g">2G Cells</option>
+                        <option value="cells_3g">3G Cells</option>
+                        <option value="equipment_count">Equipment Count</option>
+                    </select>
+                </div>
+                <div id="heatmap-grid" class="heatmap-grid"></div>
+            </section>
+
+            <!-- Audit -->
+            <section id="view-audit-view" class="view hidden fade-in">
+                <div class="header">
+                    <h2>Network Audit</h2>
+                    <p>One-click scan across all datasets for faults, gaps, and version mismatches.</p>
+                </div>
+                <button class="btn primary" onclick="runAudit()" id="btn-run-audit">🔍 Run Full Audit</button>
+                <div id="audit-results" class="mt-2"></div>
+            </section>
+
+            <!-- Smart Filter -->
+            <section id="view-filter-view" class="view hidden fade-in">
+                <div class="header">
+                    <h2>Smart Multi-Filter</h2>
+                    <p>Filter sites by multiple criteria simultaneously.</p>
+                </div>
+                <div class="glass-panel filter-bar">
+                    <select id="flt-wilaya" class="select-input">
+                        <option value="">All Wilayas</option>
+                    </select>
+                    <select id="flt-tech" class="select-input">
+                        <option value="">All Technologies</option>
+                        <option value="2G">2G</option>
+                        <option value="3G">3G</option>
+                        <option value="4G">4G</option>
+                        <option value="5G">5G</option>
+                    </select>
+                    <select id="flt-platform" class="select-input">
+                        <option value="">All Platforms</option>
+                        <option value="BTS3900">BTS3900</option>
+                        <option value="BTS5900">BTS5900</option>
+                    </select>
+                    <button class="btn primary" onclick="doFilter()">Apply Filters</button>
+                </div>
+                <div id="filter-results" class="mt-2"></div>
+            </section>
+
+            <!-- Frequencies -->
+            <section id="view-frequency-view" class="view hidden fade-in">
+                <div class="header">
+                    <h2>Frequency / Carrier Plan</h2>
+                    <p>View carrier allocation and radio parameters per site.</p>
+                </div>
+                <div class="search-bar glass-panel">
+                    <div class="search-input-wrapper">
+                        <input type="text" id="freq-site-input" placeholder="Enter site code" />
+                        <button class="btn primary" onclick="loadFrequencyPlan()">Load Plan</button>
+                    </div>
+                </div>
+                <div id="freq-results" class="mt-2"></div>
+            </section>
+
+            <!-- Lifecycle -->
+            <section id="view-lifecycle-view" class="view hidden fade-in">
+                <div class="header">
+                    <h2>Equipment Lifecycle</h2>
+                    <p>Age distribution and aging hardware tracker across 275K+ equipment items.</p>
+                </div>
+                <button class="btn primary" onclick="loadLifecycle()" id="btn-lifecycle">📊 Analyze Lifecycle</button>
+                <div id="lifecycle-results" class="mt-2"></div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Developer Signature -->
+    <footer class="dev-footer">
+        <div class="dev-sig">
+            <span class="dev-label">Developed by</span>
+            <strong class="dev-name">Hicham Hedibi</strong>
+            <span class="dev-contact">📞 0550 26 31 19 &bull; 0659 13 67 41</span>
+            <span class="dev-contact">✉ hichamhedibi@gmail.com</span>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/app.js"></script>
+</body>
+
+</html>
