@@ -17,7 +17,7 @@ def get_cache_path(file_path):
 def load_excel_file(file_path):
     cache_path = get_cache_path(file_path)
     if os.path.exists(cache_path):
-        if os.path.getmtime(cache_path) > os.path.getmtime(file_path):
+        if os.environ.get('PORT') or os.path.getmtime(cache_path) > os.path.getmtime(file_path):
             with open(cache_path, 'rb') as f:
                 return pickle.load(f)
     print(f"  Parsing: {os.path.basename(file_path)}...")

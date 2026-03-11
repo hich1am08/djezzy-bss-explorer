@@ -26,8 +26,6 @@ venv/
 ENV/
 
 # Project Specific
-*.xlsx.pkl
-.cache/
 data_store/
 tmp/
 *.log
