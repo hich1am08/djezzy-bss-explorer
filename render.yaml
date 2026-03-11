@@ -1,6 +1,7 @@
 services:
   - type: web
     name: djezzy-bss-explorer
+    plan: free
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn --bind 0.0.0.0:$PORT --timeout 300 --workers 1 run:app
