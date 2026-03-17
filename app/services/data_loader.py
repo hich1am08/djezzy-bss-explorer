@@ -3,6 +3,7 @@ import pandas as pd
 import pickle
 import re
 import glob
+import gc
 from app.config import Config
 from app import DATA_STORE
 
@@ -19,20 +20,25 @@ def load_excel_file(file_path):
     if os.path.exists(cache_path):
         if os.environ.get('PORT') or os.path.getmtime(cache_path) > os.path.getmtime(file_path):
             with open(cache_path, 'rb') as f:
-                return pickle.load(f)
+                df = pickle.load(f)
+            info = {"path": cache_path, "rows": len(df), "columns": df.columns.tolist()}
+            del df
+            gc.collect()
+            return info
     print(f"  Parsing: {os.path.basename(file_path)}...")
-    import gc
     try:
         df = pd.read_excel(file_path, engine='openpyxl')
         # Fill NaN and convert to string to save memory and avoid type issues
         df = df.fillna("-").astype(str)
         with open(cache_path, 'wb') as f:
             pickle.dump(df, f)
+        info = {"path": cache_path, "rows": len(df), "columns": df.columns.tolist()}
+        del df
         gc.collect()
-        return df
+        return info
     except Exception as e:
         print(f"  ERROR loading {file_path}: {e}")
-        return pd.DataFrame()
+        return None
 
 def _extract_site_code_from_cell(cell_name):
     if not cell_name or not isinstance(cell_name, str):
@@ -63,20 +69,30 @@ def _build_site_index():
     SITE_INDEX.clear()
     print("  Building site index across all datasets...")
     
-    for key, df in DATA_STORE.items():
-        if df.empty:
+    for key, info in DATA_STORE.items():
+        if not info or not os.path.exists(info["path"]):
             continue
+        with open(info["path"], 'rb') as f:
+            df = pickle.load(f)
+            
         name_col = _find_name_column(df)
         if not name_col:
+            del df
+            gc.collect()
             continue
-        for idx, row in df.iterrows():
-            site_code = _extract_site_code_from_cell(str(row.get(name_col, "")))
-            if site_code and len(site_code) >= 6:
-                if site_code not in SITE_INDEX:
-                    SITE_INDEX[site_code] = {}
-                if key not in SITE_INDEX[site_code]:
-                    SITE_INDEX[site_code][key] = []
-                SITE_INDEX[site_code][key].append(idx)
+            
+        site_codes = df[name_col].astype(str).apply(_extract_site_code_from_cell)
+        valid_mask = site_codes.str.len() >= 6
+        
+        for idx, site_code in site_codes[valid_mask].items():
+            if site_code not in SITE_INDEX:
+                SITE_INDEX[site_code] = {}
+            if key not in SITE_INDEX[site_code]:
+                SITE_INDEX[site_code][key] = []
+            SITE_INDEX[site_code][key].append(idx)
+                
+        del df
+        gc.collect()
     
     print(f"  Site index built: {len(SITE_INDEX)} unique sites across {len(DATA_STORE)} datasets.")
 
@@ -92,8 +108,10 @@ def _scan_report_dir(dir_name, prefix):
         # Create a clean dataset key: e.g. "4G_LTE_RRU_Report" from "LTE_RRU_Report_2025..._CONVERTED.xlsx"
         clean_name = re.sub(r'_\d{14}_CONVERTED', '', fname.replace('.xlsx', ''))
         key = f"{prefix}_{clean_name}"
-        DATA_STORE[key] = load_excel_file(fpath)
-        print(f"  {key}: {len(DATA_STORE[key])} rows")
+        info = load_excel_file(fpath)
+        if info:
+            DATA_STORE[key] = info
+            print(f"  {key}: {info['rows']} rows")
 
 def load_all_data():
     DATA_STORE.clear()
@@ -112,11 +130,12 @@ def load_all_data():
     print("[DataLoader] === Loading Core Datasets ===")
     for key, path in core_files.items():
         if os.path.exists(path):
-            DATA_STORE[key] = load_excel_file(path)
-            print(f"  {key}: {len(DATA_STORE[key])} rows")
+            info = load_excel_file(path)
+            if info:
+                DATA_STORE[key] = info
+                print(f"  {key}: {info['rows']} rows")
         else:
             print(f"  MISSING: {path}")
-            DATA_STORE[key] = pd.DataFrame()
     
     # Extended report datasets (the 39 files)
     print("[DataLoader] === Loading Extended Reports ===")
@@ -130,31 +149,42 @@ def load_all_data():
     print("[DataLoader] === All data loaded successfully ===")
 
 def get_dataframe(key):
-    return DATA_STORE.get(key, pd.DataFrame())
+    info = DATA_STORE.get(key)
+    if info and os.path.exists(info["path"]):
+        with open(info["path"], 'rb') as f:
+            return pickle.load(f)
+    return pd.DataFrame()
 
 def get_all_dataset_names():
-    return sorted([k for k, v in DATA_STORE.items() if not v.empty])
+    return sorted([k for k, v in DATA_STORE.items() if v and v.get('rows', 0) > 0])
 
 def get_dataset_page(name, page=1, per_page=50, search=""):
-    df = DATA_STORE.get(name, pd.DataFrame())
+    df = get_dataframe(name)
     if df.empty:
         return [], 0, []
+        
     if search and len(search) >= 2:
         mask = df.astype(str).apply(
             lambda col: col.str.lower().str.contains(search.lower(), na=False, regex=False)
         ).any(axis=1)
         df = df[mask]
+        
     total = len(df)
     start = (page - 1) * per_page
     end = start + per_page
     page_df = df.iloc[start:end].fillna("-")
-    return page_df.to_dict('records'), total, df.columns.tolist()
+    
+    cols = df.columns.tolist()
+    records = page_df.to_dict('records')
+    
+    del page_df
+    del df
+    gc.collect()
+    
+    return records, total, cols
 
 def is_data_loaded():
-    for df in DATA_STORE.values():
-        if not df.empty:
-            return True
-    return False
+    return len(DATA_STORE) > 0
 
 def get_site_index():
     return SITE_INDEX

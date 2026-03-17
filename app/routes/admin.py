@@ -65,8 +65,11 @@ def upload_dataset():
         cache_path = get_cache_path(target_path)
         if os.path.exists(cache_path):
             os.remove(cache_path)
-        DATA_STORE[category] = load_excel_file(target_path)
-        results.append(f"{category}: {len(DATA_STORE[category])} rows")
+        
+        info = load_excel_file(target_path)
+        if info:
+            DATA_STORE[category] = info
+            results.append(f"{category}: {info.get('rows', 0)} rows")
 
     elif category in report_folder_map:
         # Report datasets: save multiple files to the report folder

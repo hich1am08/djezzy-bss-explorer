@@ -1,5 +1,6 @@
 from flask import Flask
 from app.config import Config
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_wtf.csrf import CSRFProtect
 
 csrf = CSRFProtect()
@@ -11,6 +12,7 @@ def create_app():
     app = Flask(__name__, static_folder="../", static_url_path="")
     app.config.from_object(Config)
     app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # 200MB max upload
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
     csrf.init_app(app)
 

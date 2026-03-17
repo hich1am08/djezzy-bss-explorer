@@ -29,6 +29,7 @@ ENV/
 data_store/
 tmp/
 *.log
+users.json
 
 # Deployment scripts (if any leftover)
 hf_*
