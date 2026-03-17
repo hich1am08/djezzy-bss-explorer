@@ -30,6 +30,7 @@ data_store/
 tmp/
 *.log
 users.json
+.cache/
 
 # Deployment scripts (if any leftover)
 hf_*
